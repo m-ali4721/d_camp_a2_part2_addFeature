@@ -4,7 +4,7 @@ services:
     image: m-ali/flask_app:1.0.0
     build: .
     ports:
-      - "4000"
+      - "4000:4000"
     environment:
       - DB_URL=postgresql://postgres:postgres@flask_db:5432/postgres
     depends_on:
@@ -14,13 +14,32 @@ services:
     container_name: flask_db 
     image: postgres:12
     ports:
-      - "5434:5432"
+      - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=postgres 
       - POSTGRES_USER=postgres 
       - POSTGRES_DB=postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - flask_app
+
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
 
 volumes:
   pgdata: {}
